@@ -2,6 +2,9 @@
 // Import the module and reference it with the alias vscode in your code below
 var vscode = require('vscode');
 
+// TODO: turn into a configuration option
+const macos = true;
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -15,7 +18,6 @@ function activate(context) {
             return; // No open text editor
         }
 
-        const url = 'https://devdocs.io/';
         let language = editor.document.languageId
         if (language == "python") {
             language = "python3.6";
@@ -39,13 +41,16 @@ function activate(context) {
             return;
         }
         if (text.indexOf('\n') >= 0) {
-          vscode.window.showErrorMessage('Multiline selection not allowed for your security.');
-          return;
+            vscode.window.showErrorMessage('Multiline selection not allowed for your security.');
+            return;
         }
 
         // Open URI
-        let uri = vscode.Uri.parse(url + "#q=" + language + "%20" + text);
-        vscode.commands.executeCommand('vscode.open', uri);
+        const url = macos
+            ? 'devdocs-macos://search?doc=' + language + '&term=' + text
+            : 'https://devdocs.io/#q=' + language + "%20" + text;
+        let uri = vscode.Uri.parse(url);
+        return vscode.env.openExternal(uri);
    });
 
     context.subscriptions.push(disposable);
